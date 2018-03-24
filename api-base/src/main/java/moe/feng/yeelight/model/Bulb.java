@@ -1,6 +1,6 @@
 package moe.feng.yeelight.model;
 
-import com.google.gson.Gson;
+import moe.feng.yeelight.GsonUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,6 +52,10 @@ public class Bulb implements Serializable {
         }
     }
 
+    public String toJsonString() {
+        return GsonUtils.toJson(this);
+    }
+
     public Method.Builder createMethod(String method) {
         return new Method.Builder().setTarget(this).setMethod(method);
     }
@@ -61,7 +65,7 @@ public class Bulb implements Serializable {
             throw new IllegalArgumentException();
         }
         return createMethod(Method.SET_POWER)
-                .setParams(Arrays.asList(state ? "on": "off", effect, duration))
+                .setParams(state ? "on": "off", effect, duration)
                 .build();
     }
 
@@ -73,7 +77,7 @@ public class Bulb implements Serializable {
             throw new IllegalArgumentException();
         }
         return createMethod(Method.SET_POWER)
-                .setParams(Arrays.asList(state ? "on": "off", effect, duration, mode))
+                .setParams(state ? "on": "off", effect, duration, mode)
                 .build();
     }
 
@@ -88,7 +92,7 @@ public class Bulb implements Serializable {
             throw new IllegalArgumentException();
         }
         return createMethod(Method.SET_BRIGHTNESS)
-                .setParams(Arrays.asList(brightness, effect, duration))
+                .setParams(brightness, effect, duration)
                 .build();
     }
 
@@ -106,7 +110,7 @@ public class Bulb implements Serializable {
             throw new IllegalArgumentException();
         }
         return createMethod(Method.SET_HSV)
-                .setParams(Arrays.asList(hue, sat, effect, duration))
+                .setParams(hue, sat, effect, duration)
                 .build();
     }
 
@@ -121,13 +125,13 @@ public class Bulb implements Serializable {
             throw new IllegalArgumentException();
         }
         return createMethod(Method.SET_RGB)
-                .setParams(Arrays.asList(rgb, effect, duration))
+                .setParams(rgb, effect, duration)
                 .build();
     }
 
     public Method createStartColorFlowMethod(int count, int action, List<ColorFlowTuple> colorFlowTuples) {
         return createMethod(Method.START_COLOR_FLOW)
-                .setParams(Arrays.asList(count, action, ColorFlowTuple.parseListToString(colorFlowTuples)))
+                .setParams(count, action, ColorFlowTuple.parseListToString(colorFlowTuples))
                 .build();
     }
 
@@ -137,8 +141,52 @@ public class Bulb implements Serializable {
 
     public Method createSetAdjustMethod(String action, String prop) {
         return createMethod(Method.SET_ADJUST)
-                .setParams(Arrays.asList(action, prop))
+                .setParams(action, prop)
                 .build();
+    }
+
+    public Method createSetColorSceneMethod(int color, int brightness) {
+        return createMethod(Method.SET_SCENE)
+                .setParams("color", color, brightness)
+                .build();
+    }
+
+    public Method createSetHSVSceneMethod(int hue, int sat, int brightness) {
+        return createMethod(Method.SET_SCENE)
+                .setParams("hsv", hue, sat, brightness)
+                .build();
+    }
+
+    public Method createSetColorTemperatureSceneMethod(int temperature, int brightness) {
+        return createMethod(Method.SET_SCENE)
+                .setParams("ct", temperature, brightness)
+                .build();
+    }
+
+    public Method createSetColorFlowSceneMethod(int count, int action, List<ColorFlowTuple> colorFlowTuples) {
+        return createMethod(Method.SET_SCENE)
+                .setParams("cf", count, action, ColorFlowTuple.parseListToString(colorFlowTuples))
+                .build();
+    }
+
+    public Method createAutoDelayOffSceneMethod(int brightness, int delay) {
+        return createMethod(Method.SET_SCENE)
+                .setParams("auto_delay_off", brightness, delay)
+                .build();
+    }
+
+    public Method createCronAddMethod(int type, int minutes) {
+        return createMethod(Method.CRON_ADD)
+                .setParams(type, minutes)
+                .build();
+    }
+
+    public Method createCronGetMethod(int type) {
+        return createMethod(Method.CRON_GET).setParams(type).build();
+    }
+
+    public Method createCronDelMethod(int type) {
+        return createMethod(Method.CRON_DEL).setParams(type).build();
     }
 
     public Method createToggleMethod() {
@@ -151,7 +199,7 @@ public class Bulb implements Serializable {
 
     public Method createGetPropMethod(String... propNames) {
         return createMethod(Method.GET_PROP)
-                .setParams(Arrays.<String>asList(propNames))
+                .setParams(propNames)
                 .build();
     }
 
@@ -191,7 +239,7 @@ public class Bulb implements Serializable {
     }
 
     public static Bulb fromJson(String json) {
-        return new Gson().fromJson(json, Bulb.class);
+        return GsonUtils.fromJson(json, Bulb.class);
     }
 
 }

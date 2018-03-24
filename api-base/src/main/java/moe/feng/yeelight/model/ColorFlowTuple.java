@@ -1,8 +1,9 @@
 package moe.feng.yeelight.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ColorFlowTuple {
+public class ColorFlowTuple implements Serializable {
 
     private int duration = 50;
     private int mode = Mode.COLOR_TEMPERATURE;

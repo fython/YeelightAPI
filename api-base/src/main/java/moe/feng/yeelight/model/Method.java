@@ -1,14 +1,14 @@
 package moe.feng.yeelight.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
+import moe.feng.yeelight.GsonUtils;
 import moe.feng.yeelight.YeelightAPI;
 
 import java.io.*;
-import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class Method implements Serializable {
 
@@ -22,6 +22,10 @@ public class Method implements Serializable {
     public static final String START_COLOR_FLOW = "start_cf";
     public static final String STOP_COLOR_FLOW = "stop_cf";
     public static final String SET_ADJUST = "set_adjust";
+    public static final String SET_SCENE = "set_scene";
+    public static final String CRON_ADD = "cron_add";
+    public static final String CRON_GET = "cron_get";
+    public static final String CRON_DEL = "cron_del";
 
     public static final class Effect {
 
@@ -65,10 +69,8 @@ public class Method implements Serializable {
 
     }
 
-    private static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-
     private Bulb target;
-    private @Expose String id;
+    private @Expose int id = 1000;
     private @Expose String method;
     private @Expose List params;
 
@@ -76,7 +78,7 @@ public class Method implements Serializable {
 
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -89,27 +91,31 @@ public class Method implements Serializable {
     }
 
     public String toJsonString() {
-        return GSON.toJson(this);
+        return GsonUtils.toJson(this);
     }
 
     public Response call() throws IOException {
-        Socket s = YeelightAPI.openSocket(target);
+        YeelightAPI.openSocket(target);
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        BufferedReader reader = YeelightAPI.getSocketReader(target);
+        DataOutputStream out = YeelightAPI.getSocketOutputStream(target);
 
         out.writeBytes(toJsonString() + "\r\n");
         out.flush();
 
-        String result = reader.readLine();
+        for (int retryTime = 0; retryTime < 10; retryTime++) {
+            Response result = Response.fromJson(reader.readLine());
+            if (result.getId() == 1000) {
+                return result;
+            }
+        }
 
-        return Response.fromJson(result);
+        return null;
     }
 
     public static class Builder implements Serializable {
 
         private Bulb target;
-        private String id;
         private String method;
         private List params = new ArrayList<>();
 
@@ -123,18 +129,6 @@ public class Method implements Serializable {
 
         public Builder setTarget(Bulb target) {
             this.target = target;
-            if (this.id == null) {
-                this.id = target.id;
-            }
-            return this;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public Builder setId(String id) {
-            this.id = id;
             return this;
         }
 
@@ -156,6 +150,10 @@ public class Method implements Serializable {
             return this;
         }
 
+        public Builder setParams(Object... params) {
+            return setParams(Arrays.asList(params));
+        }
+
         public Builder addParam(Object param) {
             this.params.add(param);
             return this;
@@ -164,7 +162,6 @@ public class Method implements Serializable {
         public Method build() {
             Method result = new Method();
             result.target = target;
-            result.id = id;
             result.method = method;
             result.params = params;
             return result;
@@ -176,6 +173,7 @@ public class Method implements Serializable {
 
         private @Expose int id;
         private @Expose List<String> result;
+        private @Expose Map<String, String> error;
 
         public int getId() {
             return id;
@@ -187,11 +185,19 @@ public class Method implements Serializable {
 
         @Override
         public String toString() {
-            return GSON.toJson(this);
+            return GsonUtils.toJson(this);
+        }
+
+        public boolean isOk() {
+            return !isFailed() && result != null && !result.isEmpty();
+        }
+
+        public boolean isFailed() {
+            return error != null && !error.isEmpty();
         }
 
         public static Response fromJson(String json) {
-            return GSON.fromJson(json, Response.class);
+            return GsonUtils.fromJson(json, Response.class);
         }
     }
 

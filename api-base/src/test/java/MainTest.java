@@ -3,7 +3,6 @@ import moe.feng.yeelight.model.Bulb;
 import moe.feng.yeelight.model.ColorFlowTuple;
 import moe.feng.yeelight.model.Method;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class MainTest {
                 }
             }
             Bulb bulb = bulbs.get(0);
-            System.out.println(bulb.callGetProperties());
+            System.out.println(bulb.callGetProperties("power", "ct", "bright"));
             System.out.println(bulb.createStartColorFlowMethod(
                     0,
                     Method.ColorFlowAction.RECOVER_LAST_STATE,
@@ -42,7 +41,7 @@ public class MainTest {
                                     .colorTemperature(2700)
                                     .build()
                     )).call());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

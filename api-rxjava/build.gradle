@@ -1,0 +1,19 @@
+apply plugin: 'java-library'
+
+sourceCompatibility = 1.8
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile project(':api-base')
+    compile 'io.reactivex.rxjava2:rxjava:2.1.12'
+}
+
+ext {
+    libraryName = 'Yeelight API RxJava Wrapper'
+    libraryDescription = 'Call Yeelight API asynchronously with RxJava 2'
+    libraryVersion = project.rootProject.version
+    artifact = project.name
+    bintrayName = project.name
+}
+
+apply from: project.rootProject.file('bintray.gradle')
