@@ -2,11 +2,17 @@ apply plugin: 'java-library'
 
 sourceCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.google.code.gson:gson:2.8.2'
 }
+
+ext {
+    libraryName = 'Yeelight API Base'
+    libraryDescription = 'Yeelight API Pure-java version'
+    libraryVersion = project.rootProject.version
+    artifact = project.name
+    bintrayName = project.name
+}
+
+apply from: project.rootProject.file('bintray.gradle')
